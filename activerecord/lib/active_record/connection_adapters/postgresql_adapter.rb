@@ -848,18 +848,63 @@ module ActiveRecord
         end
 
         def load_types_queries(initializer, oids)
-          query = <<~SQL
-            SELECT t.oid, t.typname, t.typelem, t.typdelim, t.typinput, r.rngsubtype, t.typtype, t.typbasetype
-            FROM pg_type as t
+          outer_query = <<~SQL
+            SELECT types.*, r.rngsubtype
+            FROM (
+              %s
+            ) types
             LEFT JOIN pg_range as r ON oid = rngtypid
           SQL
           if oids
-            yield query + "WHERE t.oid IN (%s)" % oids.join(", ")
+            yield outer_query % pg_types_scan_sql("t.oid IN (%s)" % oids.join(", "))
           else
-            yield query + initializer.query_conditions_for_known_type_names
-            yield query + initializer.query_conditions_for_known_type_types
-            yield query + initializer.query_conditions_for_array_types
+            # We want to keep this as a single query to prevent unnecessary
+            # round trips to the database when a connection starts up. We also
+            # want to keep the query performing optimally when there are lots
+            # of entries in pg_types.
+            #
+            # This was previously split into multiple queries because Postgres
+            # doesn't optimize OR clauses well, so if we just OR the conditions
+            # together we lose the index scan on `pg_types.typname`. However if we have to
+            # scan on `pg_types.typtype` we're going to have to use a seq scan
+            # regardless, and we might as well do a single scan to find all of
+            # the entries. Some people want to
+            # avoid the seq scan entirely, so we retain the extraction of
+            # `TypeMapInitializer#query_conditions_for_known_type_types` so that
+            # that portion can be disabled by overriding it to return `"1=0"`.
+            #
+            # We're able to fold in the array types query in a performant way
+            # in the single query by using a CTE -- instead of doing a seq scan
+            # on `pg_types.typelem` we work the opposite direction and can look
+            # up entries using the `oid` index based on `typarray` values from
+            # the rows we're otherwise returning.
+            pg_types_conditions_sql = [
+              initializer.query_conditions_for_known_type_types,
+              initializer.query_conditions_for_known_type_names,
+            ].join " OR "
+            inner_query = <<~SQL
+              WITH non_array_types AS (
+                #{pg_types_scan_sql(pg_types_conditions_sql, select_typarray: true)}
+              )
+              (
+                SELECT oid, typname, typelem, typdelim, typinput, typtype, typbasetype
+                FROM non_array_types
+                UNION
+                SELECT oid, typname, typelem, typdelim, typinput, typtype, typbasetype
+                FROM pg_type
+                WHERE oid = ANY ((SELECT array_agg(nat.typarray) FROM non_array_types nat)::oid[])
+              )
+            SQL
+            yield outer_query % inner_query
           end
+        end
+
+        def pg_types_scan_sql(where_conditions_sql, select_typarray: false)
+          <<~SQL % where_conditions_sql
+            SELECT t.oid, t.typname, t.typelem, t.typdelim, t.typinput, t.typtype, t.typbasetype, t.typarray
+            FROM pg_type as t
+            WHERE %s
+          SQL
         end
 
         FEATURE_NOT_SUPPORTED = "0A000" # :nodoc:
