@@ -42,6 +42,29 @@ class SchemaLoadingTest < ActiveRecord::TestCase
     assert_equal 2, klass.load_schema_calls
   end
 
+  def test_schema_loading_doesnt_query_when_schema_cache_is_loaded
+    klass = define_model do |c|
+      c.table_name = :authors
+    end
+
+    klass.connection_pool.schema_cache.load!
+    klass.connection_pool.schema_cache.add("authors")
+    klass.connection_pool.disconnect!
+    klass.send(:reload_schema_from_cache)
+    # require "pry"; binding.pry
+
+
+    # TODO: test schema cache dumping
+    $pry = true
+    klass.connection_pool.stub(:checkout, -> { raise "bogus" }) do
+      # assert_no_queries(include_schema: true) do
+        klass.load_schema
+        # assert cast type is correct
+      # end
+    end
+    assert_equal 1, klass.load_schema_calls
+  end
+
   private
     def define_model
       Class.new(ActiveRecord::Base) do

@@ -63,7 +63,8 @@ module ActiveRecord
         # Load the cache.
         cache = load_bound_reflection(tempfile.path)
 
-        assert_no_queries do
+        @pool.stub(:checkout, -> { raise "bogus" }) do
+        #assert_no_queries do
           assert_equal 3, cache.columns("courses").size
           assert_equal 3, cache.columns_hash("courses").size
           assert cache.data_source_exists?("courses")
