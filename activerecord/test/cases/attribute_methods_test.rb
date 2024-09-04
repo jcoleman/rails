@@ -1065,6 +1065,17 @@ class AttributeMethodsTest < ActiveRecord::TestCase
     assert_equal "New topic", topic.title_alias_to_be_undefined
   end
 
+  # Test for de765e37c1d
+  test "#define_attribute_methods doesn't connect to the database when schema cache is present" do
+    @target.connection_pool.schema_cache.load!
+    @target.connection_pool.schema_cache.add("authors")
+    @target.connection_pool.disconnect!
+
+    assert_no_queries(include_schema: true) do
+      @target.define_attribute_methods
+    end
+  end
+
   test "define_attribute_method works with both symbol and string" do
     klass = Class.new(ActiveRecord::Base)
     klass.table_name = "foo"

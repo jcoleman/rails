@@ -155,6 +155,7 @@ module ActiveRecord
 
             Column.new(
               field["name"],
+              lookup_cast_type(type_metadata.sql_type),
               default_value,
               type_metadata,
               field["notnull"].to_i == 0,

@@ -159,8 +159,7 @@ module ActiveRecord
           elsif column.type == :uuid && value.is_a?(String) && value.include?("()")
             value # Does not quote function default values for UUID columns
           elsif column.respond_to?(:array?)
-            type = lookup_cast_type_from_column(column)
-            quote(type.serialize(value))
+            quote(column.cast_type.serialize(value))
           else
             super
           end
@@ -186,9 +185,9 @@ module ActiveRecord
           end
         end
 
-        def lookup_cast_type_from_column(column) # :nodoc:
+        def lookup_cast_type_from_type_metadata(type_metadata) # :nodoc:
           verify! if type_map.nil?
-          type_map.lookup(column.oid, column.fmod, column.sql_type)
+          type_map.lookup(type_metadata.oid, type_metadata.fmod, type_metadata.sql_type)
         end
 
         private

@@ -202,6 +202,7 @@ module ActiveRecord
 
             MySQL::Column.new(
               field["Field"],
+              lookup_cast_type(type_metadata.sql_type),
               default,
               type_metadata,
               field["Null"] == "YES",
