@@ -157,10 +157,16 @@ platforms :ruby, :windows do
 
   group :db do
     gem "pg", "~> 1.3"
-    gem "mysql2", "~> 0.5"
+    # Add a way to run tests without installing the mysql gem (it's a native gem
+    # and requires libraries the system might not have available)? If you're
+    # only running test_postgresql it doesn't make sense to need mysql.
+    # gem "mysql2", "~> 0.5"
     gem "trilogy", ">= 2.7.0"
   end
 end
+
+gem "pry"
+gem "pry-byebug"
 
 gem "tzinfo-data", platforms: [:windows, :jruby]
 gem "wdm", ">= 0.1.0", platforms: [:windows]

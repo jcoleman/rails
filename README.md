@@ -86,6 +86,12 @@ In addition to that, Rails also comes with:
     * [Ruby on Rails Guides](https://guides.rubyonrails.org)
     * [The API Documentation](https://api.rubyonrails.org)
 
+Can run a single test with:
+
+```
+bundle exec rake test_postgresql TEST=test/cases/schema_loading_test.rb TESTOPTS="-n'/schema_load/'"
+```
+
 ## Contributing
 
 We encourage you to contribute to Ruby on Rails! Please check out the

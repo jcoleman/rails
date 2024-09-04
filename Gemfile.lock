@@ -171,6 +171,7 @@ GEM
     bunny (2.22.0)
       amq-protocol (~> 2.3, >= 2.3.1)
       sorted_set (~> 1, >= 1.0.2)
+    byebug (11.1.3)
     capybara (3.39.2)
       addressable
       matrix
@@ -183,6 +184,7 @@ GEM
     cgi (0.4.1)
     chef-utils (18.3.0)
       concurrent-ruby
+    coderay (1.1.3)
     concurrent-ruby (1.3.3)
     connection_pool (2.4.1)
     crack (0.4.5)
@@ -344,6 +346,7 @@ GEM
       mixlib-cli (~> 2.1, >= 2.1.1)
       mixlib-config (>= 2.2.1, < 4)
       mixlib-shellout
+    method_source (1.1.0)
     mini_magick (4.12.0)
     mini_mime (1.1.5)
     mini_portile2 (2.8.7)
@@ -367,7 +370,6 @@ GEM
     multi_json (1.15.0)
     multipart-post (2.3.0)
     mutex_m (0.2.0)
-    mysql2 (0.5.6)
     net-http-persistent (4.0.2)
       connection_pool (~> 2.2)
     net-imap (0.4.9)
@@ -406,6 +408,12 @@ GEM
       activesupport (>= 7.0.0)
       rack
       railties (>= 7.0.0)
+    pry (0.14.2)
+      coderay (~> 1.1)
+      method_source (~> 1.0)
+    pry-byebug (3.10.1)
+      byebug (~> 11.0)
+      pry (>= 0.13, < 0.15)
     psych (5.1.2)
       stringio
     public_suffix (5.0.4)
@@ -658,11 +666,12 @@ DEPENDENCIES
   minitest-ci
   minitest-retry
   msgpack (>= 1.7.0)
-  mysql2 (~> 0.5)
   nokogiri (>= 1.8.1, != 1.11.0)
   pg (~> 1.3)
   prism
   propshaft (>= 0.1.7)
+  pry
+  pry-byebug
   puma (>= 5.0.3)
   queue_classic (>= 4.0.0)
   rack (~> 3.0)
