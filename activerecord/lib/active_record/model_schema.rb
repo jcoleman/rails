@@ -621,9 +621,12 @@ module ActiveRecord
           end
         end
 
-        def type_for_column(connection, column)
-          type = connection.lookup_cast_type_from_column(column)
-
+        def type_for_column(column)
+          column.cast_type
+          # type = with_connection do |connection|
+          #   connection.lookup_cast_type_from_column(column)
+          # end
+          #
           if immutable_strings_by_default && type.respond_to?(:to_immutable_string)
             type = type.to_immutable_string
           end

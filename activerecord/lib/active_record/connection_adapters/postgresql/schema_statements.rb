@@ -979,6 +979,7 @@ module ActiveRecord
 
             PostgreSQL::Column.new(
               column_name,
+              lookup_cast_type_from_type_metadata(type_metadata),
               default_value,
               type_metadata,
               !notnull,

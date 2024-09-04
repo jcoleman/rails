@@ -187,8 +187,15 @@ module ActiveRecord
         end
 
         def lookup_cast_type_from_column(column) # :nodoc:
+          # require "pry"; binding.pry if $pry
           verify! if type_map.nil?
           type_map.lookup(column.oid, column.fmod, column.sql_type)
+        end
+
+        def lookup_cast_type_from_type_metadata(type_metadata) # :nodoc:
+          # require "pry"; binding.pry if $pry
+          verify! if type_map.nil?
+          type_map.lookup(type_metadata.oid, type_metadata.fmod, type_metadata.sql_type)
         end
 
         private
