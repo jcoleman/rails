@@ -16,10 +16,10 @@ module ActiveRecord
       #   assert_queries_count(1, include_schema: true) { Post.columns }
       #
       def assert_queries_count(count = nil, include_schema: false, &block)
-        ActiveRecord::Base.lease_connection.materialize_transactions
-
         counter = SQLCounter.new
         ActiveSupport::Notifications.subscribed(counter, "sql.active_record") do
+          ActiveRecord::Base.lease_connection.materialize_transactions
+
           result = _assert_nothing_raised_or_warn("assert_queries_count", &block)
           queries = include_schema ? counter.log_all : counter.log
           if count
