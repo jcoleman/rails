@@ -23,8 +23,17 @@ module ActiveRecord
       end
 
       def load_bound_reflection(filename, pool = @pool)
+        reset_deduplicable!
         BoundSchemaReflection.new(SchemaReflection.new(filename), pool).tap do |cache|
           cache.load!
+        end
+      end
+
+      def reset_deduplicable!
+        ActiveRecord::ConnectionAdapters::Deduplicable.classes.flat_map do |klass|
+          [klass] + klass.descendants
+        end.each do |klass|
+          klass.registry.clear
         end
       end
 
@@ -37,6 +46,8 @@ module ActiveRecord
 
         tempfile = Tempfile.new(["schema_cache-", ".yml"])
         cache.dump_to(tempfile.path)
+
+        reset_deduplicable!
 
         reflection = SchemaReflection.new(tempfile.path)
 
@@ -59,6 +70,8 @@ module ActiveRecord
         tempfile = Tempfile.new(["schema_cache-", ".yml"])
         # Dump it. It should get populated before dumping.
         cache.dump_to(tempfile.path)
+
+        reset_deduplicable!
 
         # Load the cache.
         cache = load_bound_reflection(tempfile.path)
@@ -93,6 +106,8 @@ module ActiveRecord
         tempfile = Tempfile.new(["schema_cache-", ".yml.gz"])
         # Dump it. It should get populated before dumping.
         cache.dump_to(tempfile.path)
+
+        reset_deduplicable!
 
         # Unzip and load manually.
         cache = Zlib::GzipReader.open(tempfile.path) do |gz|

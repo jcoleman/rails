@@ -5,6 +5,13 @@ module ActiveRecord
     module Deduplicable
       extend ActiveSupport::Concern
 
+      cattr_accessor :classes
+      self.classes = []
+
+      included do
+        Deduplicable.classes << self
+      end
+
       module ClassMethods
         def registry
           @registry ||= {}
